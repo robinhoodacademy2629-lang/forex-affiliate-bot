@@ -50,6 +50,7 @@ def get_messages(broker="xm"):
     video = EBC_VIDEO if broker == "ebc" else XM_VIDEO
 
     defaults = [
+        # 1-р мессеж — брокер сонгосны дараа явна
         f"""👋 Сайн байна уу! Robinhood trading academy-д тавтай морил!
 
 Би танд:
@@ -57,14 +58,13 @@ def get_messages(broker="xm"):
 ✅ EUR/USD, USDJPY, AUDUSD, NAS100, Gold сигнал болон IDEA
 ✅ Хаалттай сигнал Channel-д үнэгүй нэвтрэх эрх санал болгож байна
 
-🚀 {broker_name}-д доорхи линкээр ҮНЭГҮЙ бүртгүүлснээр орох боломжтой:
+🚀 XM/EBC-д доорхи линкээр ҮНЭГҮЙ бүртгүүлснээр орох боломжтой.
 👉 {link}
 
 📹 Данс нээх заавар видео:
-▶️ {video}
+▶️ {video}""",
 
-⭐ Брокерт бүртгүүлсний дараа ID-гаа илгээвэл хаалттай сигнал Channel-д нэмэгдэнэ!""",
-
+        # 2-р мессеж — 1 өдрийн дараа
         f"""📊 Forex-д трейдерүүдийн гаргадаг нийтлэг 4 алдаа:
 
 ❌ Хэт их leverage ашиглах
@@ -79,6 +79,7 @@ def get_messages(broker="xm"):
 
 👉 {link}""",
 
+        # 3-р мессеж — 3 өдрийн дараа
         f"""🔥 Энэ долоо хоногийн шинжилгээний үр дүн:
 
 GOLD: +600 pips ✅
@@ -93,6 +94,7 @@ USDJPY: -150 pips ❌
 📹 Данс нээх заавар:
 ▶️ {video}""",
 
+        # 4-р мессеж — 7 өдрийн дараа
         f"""💎 Та энэ 7 хоногийн үр дүнгээ алдлаа!
 
 Одоог хүртэл бүртгүүлээгүй бол яарна уу:
@@ -196,12 +198,10 @@ async def process_reject(context, target_id, data):
     del data["pending"][str(target_id)]
     save_data(data)
 
-# ─── /start ───────────────────────────────────────────────────
 async def start(update, context):
     chat_id = update.effective_chat.id
     name = update.effective_user.first_name or "Хэрэглэгч"
     data = load_data()
-
     if str(chat_id) not in data["users"]:
         data["users"][str(chat_id)] = {
             "name": name, "chat_id": chat_id,
@@ -220,7 +220,7 @@ async def start(update, context):
             except:
                 pass
 
-    # 1️⃣ Эхлээд welcome мессеж
+    # 1️⃣ Welcome мессеж
     await update.message.reply_text(
         f"👋 Сайн байна уу, {name}!\n\n"
         f"Robinhood Trading Academy-д тавтай морил! 🎓\n\n"
@@ -230,15 +230,15 @@ async def start(update, context):
         f"✅ Хаалттай сигнал Channel-д үнэгүй нэвтрэх эрх санал болгож байна"
     )
 
-    # 2️⃣ Дараа нь брокер сонголт
+    # 2️⃣ Брокер сонголт
     await update.message.reply_text(
-        "🚀 Эхлэхийн тулд та аль брокерт бүртгүүлэхийг хүсэж байна вэ?\n\n"
+        "🚀 XM/EBC-д доорхи линкээр ҮНЭГҮЙ бүртгүүлснээр орох боломжтой.\n\n"
+        "Та аль брокерт бүртгүүлэхийг хүсэж байна вэ?\n\n"
         "1️⃣ XM — Дэлхийн топ broker, $5-аас эхэлнэ\n"
         "2️⃣ EBC — Олон улсын найдвартай broker",
         reply_markup=broker_keyboard()
     )
 
-# ─── /stats ───────────────────────────────────────────────────
 async def stats_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -269,7 +269,6 @@ async def stats_cmd(update, context):
         f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
     )
 
-# ─── /pending ─────────────────────────────────────────────────
 async def pending_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -284,7 +283,6 @@ async def pending_cmd(update, context):
         text += f"👤 {info['name']}\n🏦 {broker}\n🆔 {info['xm_id']}\n📱 {chat_id}\n📅 {info['date']}\n/approve {chat_id} | /reject {chat_id}\n{'─'*25}\n"
     await update.message.reply_text(text)
 
-# ─── /approve ─────────────────────────────────────────────────
 async def approve_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -299,7 +297,6 @@ async def approve_cmd(update, context):
     await process_approve(context, target_id, data)
     await update.message.reply_text("✅ Баталгаажлаа!")
 
-# ─── /reject ──────────────────────────────────────────────────
 async def reject_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -314,7 +311,6 @@ async def reject_cmd(update, context):
     await process_reject(context, target_id, data)
     await update.message.reply_text("❌ Татгалзагдлаа")
 
-# ─── /broadcast ───────────────────────────────────────────────
 async def broadcast_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -338,7 +334,6 @@ async def broadcast_cmd(update, context):
             failed += 1
     await update.message.reply_text(f"✅ Broadcast дууслаа\n📤 {sent}\n❌ {failed}")
 
-# ─── /signal ──────────────────────────────────────────────────
 async def signal_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -369,7 +364,6 @@ async def signal_cmd(update, context):
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-# ─── /edit ────────────────────────────────────────────────────
 async def edit_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -387,7 +381,6 @@ async def edit_cmd(update, context):
     )
     context.user_data["editing"] = idx
 
-# ─── /help ────────────────────────────────────────────────────
 async def help_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -402,14 +395,12 @@ async def help_cmd(update, context):
         "✏️ /edit1 /edit2 /edit3 /edit4"
     )
 
-# ─── Message handler ──────────────────────────────────────────
 async def handle_message(update, context):
     chat_id = update.effective_chat.id
     text = (update.message.text or '').strip()
     text_lower = text.lower()
     name = update.effective_user.first_name or "Хэрэглэгч"
 
-    # Admin editing
     if chat_id == ADMIN_ID and "editing" in context.user_data:
         idx = context.user_data.pop("editing")
         labels = ["Welcome", "1 өдөр", "3 өдөр", "7 өдөр"]
@@ -419,7 +410,6 @@ async def handle_message(update, context):
         await update.message.reply_text(f"✅ {labels[idx]} хадгалагдлаа!")
         return
 
-    # ID шалгах
     if any(c.isdigit() for c in text) and 6 <= len(text) <= 12:
         data = load_data()
         if str(chat_id) in data.get("approved", {}):
@@ -455,7 +445,6 @@ async def handle_message(update, context):
             )
         return
 
-    # FAQ
     xm_redirect = f"{BASE_URL}/click/xm" if BASE_URL else XM_LINK
     ebc_redirect = f"{BASE_URL}/click/ebc" if BASE_URL else EBC_LINK
     faq = {
@@ -473,7 +462,6 @@ async def handle_message(update, context):
             await update.message.reply_text(answer)
             return
 
-# ─── Callback handler ─────────────────────────────────────────
 async def callback_handler(update, context):
     query = update.callback_query
     await query.answer()
@@ -564,7 +552,6 @@ async def callback_handler(update, context):
         await process_reject(context, target_id, data)
         await query.edit_message_text(f"❌ {user_info['name']} татгалзагдлаа")
 
-# ─── Click tracking ───────────────────────────────────────────
 async def handle_click(request):
     campaign = request.match_info.get("campaign", "xm")
     user_id = request.rel_url.query.get("uid", "unknown")
@@ -584,7 +571,6 @@ async def handle_click(request):
 async def handle_health(request):
     return web.Response(text="OK")
 
-# ─── Main ─────────────────────────────────────────────────────
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
