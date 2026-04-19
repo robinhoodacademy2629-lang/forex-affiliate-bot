@@ -21,6 +21,9 @@ EBC_LINK = os.environ.get("EBC_LINK", "https://client.ebc.com/signup?linkCode=B4
 SIGNAL_GROUP_ID = int(os.environ.get("SIGNAL_GROUP_ID", "0"))
 PORT = int(os.environ.get("PORT", 8080))
 
+XM_VIDEO = "https://www.youtube.com/watch?v=aXsYay_OTgA"
+EBC_VIDEO = "https://www.youtube.com/watch?v=C5yP2n5xMBw"
+
 DATA_FILE = "data.json"
 
 def load_data():
@@ -44,12 +47,68 @@ def get_messages(broker="xm"):
     data = load_data()
     link = EBC_LINK if broker == "ebc" else (XM_LINK or "")
     broker_name = "EBC" if broker == "ebc" else "XM"
+    video = EBC_VIDEO if broker == "ebc" else XM_VIDEO
+
     defaults = [
-        f"👋 Сайн байна уу! Forex арилжааны дэлхийд тавтай морил!\n\nБи танд:\n✅ Өдөр бүрийн market шинжилгээ\n✅ EUR/USD, Gold сигнал\n✅ Хаалттай сигнал Channel-д нэвтрэх эрх\n\n🚀 {broker_name}-д ҮНЭГҮЙ бүртгүүлнэ үү:\n👉 {link}\n\n⭐ Бүртгүүлсний дараа {broker_name} ID-гаа илгээвэл хаалттай сигнал Channel-д нэмэгдэнэ!\n\nАсуулт байвал хэзээ ч бичээрэй! 💬",
-        f"📊 Forex-д амжилттай трейдерүүдийн нийтлэг 3 алдаа:\n\n❌ Хэт их leverage ашиглах\n❌ Stop loss тавихгүй арилжаалах\n❌ Мэдрэмжээр шийдвэр гаргах\n\nDemo account-аас эхэл:\n👉 {link}\n\nDemo дээр дадлага → бодит мөнгөөр итгэлтэй! 💪",
-        f"🔥 Энэ долоо хоногийн шинжилгээ:\n\nEUR/USD чухал support level-д байна.\n\n📈 Чиглэл: BUY\n🎯 Entry: 1.0840\n🛡️ Stop Loss: 1.0790\n✅ Target: 1.0930\n\n⚠️ Боловсролын зорилготой.\n\n🔐 Бүрэн сигнал авахын тулд:\n👉 {link}",
-        f"💎 7 хоногийн дараа та манай community-д байгаа!\n\nОдоог хүртэл бүртгүүлээгүй бол яарна уу:\n🎁 Welcome bonus\n📚 Үнэгүй Forex course\n🔐 Хаалттай сигнал Channel-д нэвтрэх эрх\n\n👉 {link}\n\nСанал хязгаарлагдмал! ⏰"
+        f"""👋 Сайн байна уу! Robinhood trading academy-д тавтай морил!
+
+Би танд:
+✅ Өдөр бүрийн market шинжилгээ
+✅ EUR/USD, USDJPY, AUDUSD, NAS100, Gold сигнал болон IDEA
+✅ Хаалттай сигнал Channel-д үнэгүй нэвтрэх эрх санал болгож байна
+
+🚀 {broker_name}-д доорхи линкээр ҮНЭГҮЙ бүртгүүлснээр орох боломжтой:
+👉 {link}
+
+📹 Данс нээх заавар видео:
+▶️ {video}
+
+⭐ Брокерт бүртгүүлсний дараа ID-гаа илгээвэл хаалттай сигнал Channel-д нэмэгдэнэ!""",
+
+        f"""📊 Forex-д трейдерүүдийн гаргадаг нийтлэг 4 алдаа:
+
+❌ Хэт их leverage ашиглах
+❌ Stop loss тавихгүй арилжаалах
+❌ Мэдрэмжээр шийдвэр гаргах
+❌ Хангалттай туршлага, мэдлэггүй байх
+
+Та эдгээр алдаагаа засаж нэмэлт орлогыг бүрдүүлээрэй!
+
+📹 {broker_name} данс нээх заавар:
+▶️ {video}
+
+👉 {link}""",
+
+        f"""🔥 Энэ долоо хоногийн шинжилгээний үр дүн:
+
+GOLD: +600 pips ✅
+EURUSD: +200 pips ✅
+USDJPY: -150 pips ❌
+━━━━━━━━━━━━━━
+📈 Total: +650 pips
+
+🔐 Бүрэн сигнал авахын тулд {broker_name}-д бүртгүүлнэ үү:
+👉 {link}
+
+📹 Данс нээх заавар:
+▶️ {video}""",
+
+        f"""💎 Та энэ 7 хоногийн үр дүнгээ алдлаа!
+
+Одоог хүртэл бүртгүүлээгүй бол яарна уу:
+
+🎁 Broker-ийн Welcome bonus
+📚 Нэмэлт орлого
+🔐 Хаалттай сигнал Channel-д нэвтрэх эрх
+
+📹 {broker_name} данс нээх заавар:
+▶️ {video}
+
+👉 {link}
+
+Хугацаа хязгаарлагдмал! ⏰"""
     ]
+
     result = []
     for i, default in enumerate(defaults):
         custom = data["messages"].get(str(i))
@@ -64,15 +123,14 @@ def broker_keyboard():
 
 async def schedule_messages(app, chat_id, broker="xm"):
     msgs = get_messages(broker)
-    delays = [0, 86400, 259200, 604800]
+    delays = [86400, 259200, 604800]
     for i, delay in enumerate(delays):
-        if delay > 0:
-            await asyncio.sleep(delay)
+        await asyncio.sleep(delay)
         try:
-            await app.bot.send_message(chat_id=chat_id, text=msgs[i])
+            await app.bot.send_message(chat_id=chat_id, text=msgs[i+1])
             data = load_data()
             if str(chat_id) in data["users"]:
-                data["users"][str(chat_id)]["step"] = i + 1
+                data["users"][str(chat_id)]["step"] = i + 2
                 save_data(data)
         except Exception as e:
             logger.error(f"Мессеж алдаа: {e}")
@@ -89,13 +147,27 @@ async def process_approve(context, target_id, data):
             )
             await context.bot.send_message(
                 chat_id=target_id,
-                text=f"🎉 Баяр хүргэе! Таны ID баталгаажлаа!\n\n🔐 Хаалттай сигнал Channel-д нэвтрэх линк:\n👉 {invite.invite_link}\n\n⚠️ Линк 24 цагийн дотор хүчинтэй\n⚠️ Зөвхөн нэг удаа ашиглагдана\n\nАмжилттай арилжаа хийгээрэй! 💰"
+                text=f"""🎉 Баяр хүргэе! Таны ID баталгаажлаа!
+
+🔐 Хаалттай сигнал Channel-д нэвтрэх линк:
+👉 {invite.invite_link}
+
+⚠️ Линк 24 цагийн дотор хүчинтэй
+⚠️ Зөвхөн нэг удаа ашиглагдана
+
+Амжилттай арилжаа хийгээрэй! 💰"""
             )
         except Exception as e:
-            await context.bot.send_message(chat_id=target_id, text="🎉 Таны ID баталгаажлаа! Admin тантай холбогдох болно.")
+            await context.bot.send_message(
+                chat_id=target_id,
+                text="🎉 Таны ID баталгаажлаа! Admin тантай холбогдох болно."
+            )
             logger.error(f"Invite алдаа: {e}")
     else:
-        await context.bot.send_message(chat_id=target_id, text="🎉 Таны ID баталгаажлаа! Admin тантай холбогдох болно.")
+        await context.bot.send_message(
+            chat_id=target_id,
+            text="🎉 Таны ID баталгаажлаа! Admin тантай холбогдох болно."
+        )
     data["approved"][str(target_id)] = user_info
     data["approved"][str(target_id)]["approved_date"] = datetime.now().isoformat()
     del data["pending"][str(target_id)]
@@ -110,28 +182,63 @@ async def process_reject(context, target_id, data):
     user_info = data["pending"][str(target_id)]
     broker = user_info.get("broker", "xm")
     link = EBC_LINK if broker == "ebc" else XM_LINK
-    await context.bot.send_message(chat_id=target_id, text=f"❌ Таны ID баталгаажаагүй байна.\n\nДахин бүртгүүлж ID-гаа илгээнэ үү:\n👉 {link}")
+    video = EBC_VIDEO if broker == "ebc" else XM_VIDEO
+    await context.bot.send_message(
+        chat_id=target_id,
+        text=f"""❌ Таны ID баталгаажаагүй байна.
+
+Дахин манай линкээр бүртгүүлж ID-гаа илгээнэ үү:
+👉 {link}
+
+📹 Данс нээх заавар:
+▶️ {video}"""
+    )
     del data["pending"][str(target_id)]
     save_data(data)
 
+# ─── /start ───────────────────────────────────────────────────
 async def start(update, context):
     chat_id = update.effective_chat.id
     name = update.effective_user.first_name or "Хэрэглэгч"
     data = load_data()
+
     if str(chat_id) not in data["users"]:
-        data["users"][str(chat_id)] = {"name": name, "chat_id": chat_id, "joined": datetime.now().isoformat(), "step": 0, "clicked": False, "converted": False, "xm_id": None, "approved": False, "broker": None}
+        data["users"][str(chat_id)] = {
+            "name": name, "chat_id": chat_id,
+            "joined": datetime.now().isoformat(),
+            "step": 0, "clicked": False, "converted": False,
+            "xm_id": None, "approved": False, "broker": None
+        }
         data["stats"]["total"] += 1
         save_data(data)
         if ADMIN_ID:
             try:
-                await context.bot.send_message(chat_id=ADMIN_ID, text=f"🆕 Шинэ хэрэглэгч!\n👤 {name}\n🆔 {chat_id}\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+                await context.bot.send_message(
+                    chat_id=ADMIN_ID,
+                    text=f"🆕 Шинэ хэрэглэгч!\n👤 {name}\n🆔 {chat_id}\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+                )
             except:
                 pass
+
+    # 1️⃣ Эхлээд welcome мессеж
     await update.message.reply_text(
-        f"👋 Сайн байна уу, {name}!\n\nТа аль брокерт бүртгүүлэхийг хүсэж байна вэ?\n\n1️⃣ XM — Дэлхийн топ broker, $5-аас эхэлнэ\n2️⃣ EBC — Олон улсын найдвартай broker",
+        f"👋 Сайн байна уу, {name}!\n\n"
+        f"Robinhood Trading Academy-д тавтай морил! 🎓\n\n"
+        f"Би танд:\n"
+        f"✅ Өдөр бүрийн market шинжилгээ\n"
+        f"✅ EUR/USD, USDJPY, AUDUSD, NAS100, Gold сигнал болон IDEA\n"
+        f"✅ Хаалттай сигнал Channel-д үнэгүй нэвтрэх эрх санал болгож байна"
+    )
+
+    # 2️⃣ Дараа нь брокер сонголт
+    await update.message.reply_text(
+        "🚀 Эхлэхийн тулд та аль брокерт бүртгүүлэхийг хүсэж байна вэ?\n\n"
+        "1️⃣ XM — Дэлхийн топ broker, $5-аас эхэлнэ\n"
+        "2️⃣ EBC — Олон улсын найдвартай broker",
         reply_markup=broker_keyboard()
     )
 
+# ─── /stats ───────────────────────────────────────────────────
 async def stats_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -146,8 +253,23 @@ async def stats_cmd(update, context):
     approved = len(data.get("approved", {}))
     ctr = round((clicks/total*100), 1) if total > 0 else 0
     cvr = round((convs/clicks*100), 1) if clicks > 0 else 0
-    await update.message.reply_text(f"📊 СТАТИСТИК\n{'─'*25}\n👥 Нийт: {total}\n🔗 Click: {clicks} ({ctr}%)\n✅ Бүртгэл: {convs} ({cvr}%)\n💰 Орлого: ~${convs*30}\n{'─'*25}\n1️⃣ XM: {xm_count}\n2️⃣ EBC: {ebc_count}\n{'─'*25}\n⏳ Шалгагдаж байгаа: {pending}\n🔐 Группэд нэмэгдсэн: {approved}\n{'─'*25}\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+    await update.message.reply_text(
+        f"📊 СТАТИСТИК\n{'─'*25}\n"
+        f"👥 Нийт: {total}\n"
+        f"🔗 Click: {clicks} ({ctr}%)\n"
+        f"✅ Бүртгэл: {convs} ({cvr}%)\n"
+        f"💰 Орлого: ~${convs*30}\n"
+        f"{'─'*25}\n"
+        f"1️⃣ XM: {xm_count}\n"
+        f"2️⃣ EBC: {ebc_count}\n"
+        f"{'─'*25}\n"
+        f"⏳ Шалгагдаж байгаа: {pending}\n"
+        f"🔐 Channel-д нэмэгдсэн: {approved}\n"
+        f"{'─'*25}\n"
+        f"📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+    )
 
+# ─── /pending ─────────────────────────────────────────────────
 async def pending_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -162,6 +284,7 @@ async def pending_cmd(update, context):
         text += f"👤 {info['name']}\n🏦 {broker}\n🆔 {info['xm_id']}\n📱 {chat_id}\n📅 {info['date']}\n/approve {chat_id} | /reject {chat_id}\n{'─'*25}\n"
     await update.message.reply_text(text)
 
+# ─── /approve ─────────────────────────────────────────────────
 async def approve_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -176,6 +299,7 @@ async def approve_cmd(update, context):
     await process_approve(context, target_id, data)
     await update.message.reply_text("✅ Баталгаажлаа!")
 
+# ─── /reject ──────────────────────────────────────────────────
 async def reject_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -190,6 +314,7 @@ async def reject_cmd(update, context):
     await process_reject(context, target_id, data)
     await update.message.reply_text("❌ Татгалзагдлаа")
 
+# ─── /broadcast ───────────────────────────────────────────────
 async def broadcast_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -213,6 +338,7 @@ async def broadcast_cmd(update, context):
             failed += 1
     await update.message.reply_text(f"✅ Broadcast дууслаа\n📤 {sent}\n❌ {failed}")
 
+# ─── /signal ──────────────────────────────────────────────────
 async def signal_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -222,15 +348,28 @@ async def signal_cmd(update, context):
         return
     pair, direction, entry, sl, tp = args[0], args[1], args[2], args[3], args[4]
     emoji = "📈" if direction.upper() == "BUY" else "📉"
-    signal_text = f"📊 FOREX СИГНАЛ\n{'─'*22}\n💱 Хос: {pair.upper()}\n📌 Чиглэл: {direction.upper()} {emoji}\n🎯 Entry: {entry}\n🛡️ Stop Loss: {sl}\n✅ Take Profit: {tp}\n{'─'*22}\n⚠️ Боловсролын зорилготой."
+    signal_text = (
+        f"📊 FOREX СИГНАЛ\n{'─'*22}\n"
+        f"💱 Хос: {pair.upper()}\n"
+        f"📌 Чиглэл: {direction.upper()} {emoji}\n"
+        f"🎯 Entry: {entry}\n"
+        f"🛡️ Stop Loss: {sl}\n"
+        f"✅ Take Profit: {tp}\n"
+        f"{'─'*22}\n"
+        f"⚠️ Боловсролын зорилготой."
+    )
     keyboard = [[
         InlineKeyboardButton("✅ Бүгдэд илгээх", callback_data="confirm_signal"),
         InlineKeyboardButton("🔐 Зөвхөн Channel", callback_data="group_signal"),
         InlineKeyboardButton("❌ Цуцлах", callback_data="cancel_signal")
     ]]
     context.user_data["pending_signal"] = signal_text
-    await update.message.reply_text(f"📋 Preview:\n\n{signal_text}\n\nХэнд илгээх вэ?", reply_markup=InlineKeyboardMarkup(keyboard))
+    await update.message.reply_text(
+        f"📋 Preview:\n\n{signal_text}\n\nХэнд илгээх вэ?",
+        reply_markup=InlineKeyboardMarkup(keyboard)
+    )
 
+# ─── /edit ────────────────────────────────────────────────────
 async def edit_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
@@ -241,20 +380,36 @@ async def edit_cmd(update, context):
     if idx is None:
         return
     msgs = get_messages()
-    await update.message.reply_text(f"✏️ {labels[idx]} мессежийг засварлах:\n\nОдоогийн:\n{'─'*20}\n{msgs[idx]}\n{'─'*20}\n\nШинэ текстийг илгээнэ үү:")
+    await update.message.reply_text(
+        f"✏️ {labels[idx]} мессежийг засварлах:\n\n"
+        f"Одоогийн:\n{'─'*20}\n{msgs[idx]}\n{'─'*20}\n\n"
+        f"Шинэ текстийг илгээнэ үү:"
+    )
     context.user_data["editing"] = idx
 
+# ─── /help ────────────────────────────────────────────────────
 async def help_cmd(update, context):
     if update.effective_chat.id != ADMIN_ID:
         return
-    await update.message.reply_text("🤖 ADMIN КОМАНДУУД\n─────────────────────────\n📊 /stats — Статистик\n📢 /broadcast текст — Бүгдэд\n📈 /signal хос чиглэл entry sl tp\n⏳ /pending — Шалгах жагсаалт\n✅ /approve ID — Зөвшөөрөх\n❌ /reject ID — Татгалзах\n✏️ /edit1 /edit2 /edit3 /edit4")
+    await update.message.reply_text(
+        "🤖 ADMIN КОМАНДУУД\n─────────────────────────\n"
+        "📊 /stats — Статистик\n"
+        "📢 /broadcast текст — Бүгдэд\n"
+        "📈 /signal хос чиглэл entry sl tp\n"
+        "⏳ /pending — Шалгах жагсаалт\n"
+        "✅ /approve ID — Зөвшөөрөх\n"
+        "❌ /reject ID — Татгалзах\n"
+        "✏️ /edit1 /edit2 /edit3 /edit4"
+    )
 
+# ─── Message handler ──────────────────────────────────────────
 async def handle_message(update, context):
     chat_id = update.effective_chat.id
     text = (update.message.text or '').strip()
     text_lower = text.lower()
     name = update.effective_user.first_name or "Хэрэглэгч"
 
+    # Admin editing
     if chat_id == ADMIN_ID and "editing" in context.user_data:
         idx = context.user_data.pop("editing")
         labels = ["Welcome", "1 өдөр", "3 өдөр", "7 өдөр"]
@@ -264,6 +419,7 @@ async def handle_message(update, context):
         await update.message.reply_text(f"✅ {labels[idx]} хадгалагдлаа!")
         return
 
+    # ID шалгах
     if any(c.isdigit() for c in text) and 6 <= len(text) <= 12:
         data = load_data()
         if str(chat_id) in data.get("approved", {}):
@@ -273,24 +429,43 @@ async def handle_message(update, context):
         if str(chat_id) in data["users"]:
             broker = data["users"][str(chat_id)].get("broker", "xm") or "xm"
         broker_name = "EBC" if broker == "ebc" else "XM"
-        data["pending"][str(chat_id)] = {"name": name, "chat_id": chat_id, "xm_id": text, "broker": broker, "date": datetime.now().strftime("%Y-%m-%d %H:%M")}
+        data["pending"][str(chat_id)] = {
+            "name": name, "chat_id": chat_id,
+            "xm_id": text, "broker": broker,
+            "date": datetime.now().strftime("%Y-%m-%d %H:%M")
+        }
         if str(chat_id) in data["users"]:
             data["users"][str(chat_id)]["xm_id"] = text
         save_data(data)
-        await update.message.reply_text(f"✅ Таны {broker_name} ID хүлээн авлаа!\n\n🆔 ID: {text}\n⏳ Admin шалгасны дараа Channel-д нэмэгдэнэ.\n⏰ Ихэвчлэн 1-24 цагийн дотор 🙏")
+        await update.message.reply_text(
+            f"✅ Таны {broker_name} ID хүлээн авлаа!\n\n"
+            f"🆔 ID: {text}\n"
+            f"⏳ Admin шалгасны дараа Channel-д нэмэгдэнэ.\n"
+            f"⏰ Ихэвчлэн 1-24 цагийн дотор 🙏"
+        )
         if ADMIN_ID:
-            keyboard = [[InlineKeyboardButton("✅ Зөвшөөрөх", callback_data=f"approve_{chat_id}"), InlineKeyboardButton("❌ Татгалзах", callback_data=f"reject_{chat_id}")]]
-            await context.bot.send_message(chat_id=ADMIN_ID, text=f"🔔 ШИНЭ ID ИРЛЭЭ!\n\n👤 {name}\n🏦 {broker_name}\n🆔 {text}\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}", reply_markup=InlineKeyboardMarkup(keyboard))
+            keyboard = [[
+                InlineKeyboardButton("✅ Зөвшөөрөх", callback_data=f"approve_{chat_id}"),
+                InlineKeyboardButton("❌ Татгалзах", callback_data=f"reject_{chat_id}")
+            ]]
+            await context.bot.send_message(
+                chat_id=ADMIN_ID,
+                text=f"🔔 ШИНЭ ID ИРЛЭЭ!\n\n👤 {name}\n🏦 {broker_name}\n🆔 {text}\n📅 {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
         return
 
+    # FAQ
     xm_redirect = f"{BASE_URL}/click/xm" if BASE_URL else XM_LINK
     ebc_redirect = f"{BASE_URL}/click/ebc" if BASE_URL else EBC_LINK
     faq = {
-        'бүртгэл': f"📝 Бүртгүүлэх заавар:\n\n1️⃣ XM: {xm_redirect}\n2️⃣ EBC: {ebc_redirect}\n\nБүртгүүлсний дараа ID-гаа илгээгээрэй!",
-        'xm': f"1️⃣ XM Broker:\n\n✅ Хамгийн бага deposit: $5\n✅ Монголоос карт ашиглан хийж болно\n✅ MT4/MT5 платформ\n\n👉 {xm_redirect}",
-        'ebc': f"2️⃣ EBC Broker:\n\n✅ FCA зөвшөөрөлтэй\n✅ Олон улсын найдвартай\n✅ Өндөр leverage\n\n👉 {ebc_redirect}",
+        'бүртгэл': f"📝 Бүртгүүлэх заавар:\n\n1️⃣ XM: {xm_redirect}\n📹 {XM_VIDEO}\n\n2️⃣ EBC: {ebc_redirect}\n📹 {EBC_VIDEO}\n\nБүртгүүлсний дараа ID-гаа илгээгээрэй!",
+        'xm': f"1️⃣ XM Broker:\n\n✅ Хамгийн бага: $5\n✅ Монголоос карт ашиглан болно\n✅ MT4/MT5\n\n👉 {xm_redirect}\n📹 {XM_VIDEO}",
+        'ebc': f"2️⃣ EBC Broker:\n\n✅ FCA зөвшөөрөлтэй\n✅ Олон улсын найдвартай\n✅ Өндөр leverage\n\n👉 {ebc_redirect}\n📹 {EBC_VIDEO}",
+        'видео': f"📹 Данс нээх заавар видеонууд:\n\n1️⃣ XM заавар:\n{XM_VIDEO}\n\n2️⃣ EBC заавар:\n{EBC_VIDEO}",
+        'заавар': f"📹 Данс нээх заавар видеонууд:\n\n1️⃣ XM заавар:\n{XM_VIDEO}\n\n2️⃣ EBC заавар:\n{EBC_VIDEO}",
         'deposit': "💰 Deposit:\n\n1️⃣ XM — $5-аас\n2️⃣ EBC — $50-аас\n\n✅ Visa/Mastercard\n✅ Bank transfer",
-        'сигнал': "📊 Сигнал:\n\n✅ Өдөрт 1-3 сигнал\n✅ EUR/USD, Gold\n⚠️ Боловсролын зорилготой\n\n🔐 Бүртгүүлж ID-гаа илгээгээрэй!",
+        'сигнал': "📊 Сигнал:\n\n✅ Өдөрт 1-3 сигнал\n✅ EUR/USD, USDJPY, AUDUSD, NAS100, Gold\n⚠️ Боловсролын зорилготой\n\n🔐 Бүртгүүлж ID-гаа илгээгээрэй!",
         'яаж': f"🚀 Эхлэх заавар:\n\n1️⃣ Broker сонгоно\n2️⃣ Бүртгүүлнэ\n3️⃣ ID-гаа илгээнэ\n4️⃣ Channel-д орно 🔐\n5️⃣ Сигнал авна 💰\n\nXM: {xm_redirect}\nEBC: {ebc_redirect}",
     }
     for keyword, answer in faq.items():
@@ -298,6 +473,7 @@ async def handle_message(update, context):
             await update.message.reply_text(answer)
             return
 
+# ─── Callback handler ─────────────────────────────────────────
 async def callback_handler(update, context):
     query = update.callback_query
     await query.answer()
@@ -309,7 +485,12 @@ async def callback_handler(update, context):
             data["users"][str(chat_id)]["broker"] = "xm"
             save_data(data)
         redirect = f"{BASE_URL}/click/xm" if BASE_URL else XM_LINK
-        await query.edit_message_text(f"✅ XM Broker сонголоо!\n\n🚀 Доорх линкээр бүртгүүлнэ үү:\n👉 {redirect}\n\n⭐ Бүртгүүлсний дараа XM ID-гаа (8 оронтой тоо) энд илгээгээрэй!")
+        await query.edit_message_text(
+            f"✅ XM Broker сонголоо!\n\n"
+            f"📹 Данс нээх заавар видео:\n▶️ {XM_VIDEO}\n\n"
+            f"🚀 Доорх линкээр бүртгүүлнэ үү:\n👉 {redirect}\n\n"
+            f"⭐ Бүртгүүлсний дараа XM ID-гаа (8 оронтой тоо) энд илгээгээрэй!"
+        )
         asyncio.create_task(schedule_messages(context.application, chat_id, "xm"))
 
     elif query.data == "broker_ebc":
@@ -318,7 +499,12 @@ async def callback_handler(update, context):
             data["users"][str(chat_id)]["broker"] = "ebc"
             save_data(data)
         redirect = f"{BASE_URL}/click/ebc" if BASE_URL else EBC_LINK
-        await query.edit_message_text(f"✅ EBC Broker сонголоо!\n\n🚀 Доорх линкээр бүртгүүлнэ үү:\n👉 {redirect}\n\n⭐ Бүртгүүлсний дараа EBC ID-гаа (6-8 оронтой тоо) энд илгээгээрэй!")
+        await query.edit_message_text(
+            f"✅ EBC Broker сонголоо!\n\n"
+            f"📹 Данс нээх заавар видео:\n▶️ {EBC_VIDEO}\n\n"
+            f"🚀 Доорх линкээр бүртгүүлнэ үү:\n👉 {redirect}\n\n"
+            f"⭐ Бүртгүүлсний дараа EBC ID-гаа (6-8 оронтой тоо) энд илгээгээрэй!"
+        )
         asyncio.create_task(schedule_messages(context.application, chat_id, "ebc"))
 
     elif query.data == "confirm_signal":
@@ -362,7 +548,11 @@ async def callback_handler(update, context):
             return
         user_info = data["pending"][str(target_id)]
         await process_approve(context, target_id, data)
-        await query.edit_message_text(f"✅ {user_info['name']} баталгаажлаа!\n🏦 {user_info.get('broker','xm').upper()}\n🆔 {user_info['xm_id']}")
+        await query.edit_message_text(
+            f"✅ {user_info['name']} баталгаажлаа!\n"
+            f"🏦 {user_info.get('broker','xm').upper()}\n"
+            f"🆔 {user_info['xm_id']}"
+        )
 
     elif query.data.startswith("reject_"):
         target_id = int(query.data.split("_")[1])
@@ -374,12 +564,17 @@ async def callback_handler(update, context):
         await process_reject(context, target_id, data)
         await query.edit_message_text(f"❌ {user_info['name']} татгалзагдлаа")
 
+# ─── Click tracking ───────────────────────────────────────────
 async def handle_click(request):
     campaign = request.match_info.get("campaign", "xm")
     user_id = request.rel_url.query.get("uid", "unknown")
     data = load_data()
     data["stats"]["clicks"] = data["stats"].get("clicks", 0) + 1
-    data["clicks"].append({"time": datetime.now().isoformat(), "user_id": user_id, "campaign": campaign})
+    data["clicks"].append({
+        "time": datetime.now().isoformat(),
+        "user_id": user_id,
+        "campaign": campaign
+    })
     if user_id in data["users"]:
         data["users"][user_id]["clicked"] = True
     save_data(data)
@@ -389,6 +584,7 @@ async def handle_click(request):
 async def handle_health(request):
     return web.Response(text="OK")
 
+# ─── Main ─────────────────────────────────────────────────────
 async def main():
     app = Application.builder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
